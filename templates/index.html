@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prototype Runner</title>
+</head>
+<body>
+    <h2>Prototype Runner</h2>
+
+    <input id="inputBox" type="text" placeholder="Enter input">
+    <button onclick="runPrototype()">Run</button>
+
+    <pre id="outputBox"></pre>
+
+    <script>
+        async function runPrototype() {
+            const userInput = document.getElementById("inputBox").value;
+
+            const response = await fetch("/api/run", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ input: userInput })
+            });
+
+            const data = await response.json();
+            document.getElementById("outputBox").textContent = data.output;
+        }
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tech Assistant</title>
+</head>
+<body>
+    <h2>Tech Resell/Repair/Recycle Assistant</h2>
+
+    <label>Model:</label><br>
+    <input id="model" type="text"><br><br>
+
+    <label>Age:</label><br>
+    <input id="age" type="text"><br><br>
+
+    <label>Damages:</label><br>
+    <input id="damages" type="text"><br><br>
+
+    <button onclick="runTool()">Submit</button>
+
+    <h3>Response:</h3>
+    <pre id="output"></pre>
+
+    <script>
+        async function runTool() {
+            const payload = {
+                model: document.getElementById("model").value,
+                age: document.getElementById("age").value,
+                damages: document.getElementById("damages").value
+            };
+
+            const response = await fetch("/api/run", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            document.getElementById("output").textContent = data.output;
+        }
+    </script>
+</body>
+</html>
