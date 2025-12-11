@@ -1,85 +1,75 @@
 from flask import Flask, render_template, request, jsonify
-
-app = Flask(__name__)
-
-# --- Your original code goes here ---
-# (Do not modify it; just paste it where indicated.)
-
-def run_siteless_prototype(input_data):
-    """
-    This function wraps the original prototype code.
-    Replace the body with your actual code from:
-    {SITELESS PROTOTYPE CODE}
-    """
-    
-    # >>> BEGIN ORIGINAL CODE <<<
-    # {SITELESS PROTOTYPE CODE}
-    # Return some result based on your code's behavior.
-    # Make sure your pasted code ends with a variable named `result`.
-    # >>> END ORIGINAL CODE <<<
-    
-    return result
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/api/run", methods=["POST"])
-def run_api():
-    user_input = request.get_json().get("input", "")
-    output = run_siteless_prototype(user_input)
-    return jsonify({"output": output})
-
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=80)
-
-    from flask import Flask, render_template, request, jsonify
-import json
 from openai import OpenAI
+import os
 
 app = Flask(__name__)
 
+# ================================
+# SAFE: Use environment variables in real deployment
+# ================================
 client = OpenAI(
     api_key=""
 )
 
+# ---------------------------------------------------------
+# AI Logic
+# ---------------------------------------------------------
 def run_prototype(model, age, damages):
-    # --- BEGIN ORIGINAL PROTOTYPE LOGIC (adapted for web input) ---
-
     system_prompt = """
-    You are an expert assistant for determining to either resell, repair, or recycle old tech
-    ask follow up question about the item
-    site a video if you can
-    use simple language
-    """
+You are a friendly but highly knowledgeable electronics technician who helps users
+decide whether to Repair, Resell, or Recycle a device.
 
-    chat_history = [
-        {"role": "system", "content": system_prompt},
-    ]
+Rules you must follow:
+1. Always provide a complete, final answer in one message.
+2. NEVER ask follow-up questions.
+3. NEVER ask the user for more information.
+4. NEVER continue the conversation or wait for more details.
+5. Only use the information provided by the user.
+6. Keep the language simple, clear, and helpful.
+7. Your answer must be short, practical, and easy to understand.
+8. Act like a human technician — no robotic tone.
 
-    electronic = f"Electronic: {model}"
-    age_old = f"Age: {age}"
-    total_damages = f"Damages: {damages}"
+Your output must ALWAYS include EXACTLY these sections:
 
-    user_prompt = electronic + " | " + age_old + " | " + total_damages
+Recommendation: <Repair/Resell/Recycle>
 
-    chat_history.append({"role": "user", "content": user_prompt})
+Why:
+- bullet point
+- bullet point
+- bullet point
+
+Price Estimate:
+<simple estimate for resale or repair>
+
+Confidence:
+<number>%
+
+Do NOT include any follow-up questions. Do NOT request additional details.
+Just respond with the best possible direct answer based on the information you have.
+
+"""
+
+    user_prompt = (
+        f"Model: {model}\n"
+        f"Age: {age}\n"
+        f"Damages: {damages}\n"
+        f"Provide the full structured output."
+    )
 
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=chat_history
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
     )
 
-    assistant_response = response.choices[0].message.content
-
-    return assistant_response
-
-    # --- END ORIGINAL PROTOTYPE LOGIC ---
+    return response.choices[0].message.content
 
 
+# ---------------------------------------------------------
+# ROUTES
+# ---------------------------------------------------------
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -87,15 +77,18 @@ def index():
 
 @app.route("/api/run", methods=["POST"])
 def run_api():
-    data = request.get_json()
+    data = request.get_json(force=True)
+
     model = data.get("model", "")
     age = data.get("age", "")
     damages = data.get("damages", "")
 
-    result = run_prototype(model, age, damages)
+    output = run_prototype(model, age, damages)
+    return jsonify({"output": output})
 
-    return jsonify({"output": result})
 
-
+# ---------------------------------------------------------
+# MAIN ENTRY
+# ---------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=80)

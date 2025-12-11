@@ -1,71 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Prototype Runner</title>
-</head>
-<body>
-    <h2>Prototype Runner</h2>
-
-    <input id="inputBox" type="text" placeholder="Enter input">
-    <button onclick="runPrototype()">Run</button>
-
-    <pre id="outputBox"></pre>
-
-    <script>
-        async function runPrototype() {
-            const userInput = document.getElementById("inputBox").value;
-
-            const response = await fetch("/api/run", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ input: userInput })
-            });
-
-            const data = await response.json();
-            document.getElementById("outputBox").textContent = data.output;
+    <title>Tech Resell/Repair Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
         }
-    </script>
-</body>
-</html>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Tech Assistant</title>
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: #1c1c1c;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: none;
+            background: #333;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4caf50;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #output {
+            background: #000;
+            padding: 20px;
+            white-space: pre-wrap;
+            border-radius: 6px;
+            margin-top: 20px;
+            min-height: 120px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .spinner {
+            display: none;
+            margin: 10px auto;
+            border: 4px solid #333;
+            border-top: 4px solid #4caf50;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <h2>Tech Resell/Repair/Recycle Assistant</h2>
+    <div class="container">
+        <h2>Tech Resell / Repair / Recycle Assistant</h2>
 
-    <label>Model:</label><br>
-    <input id="model" type="text"><br><br>
+        <label>Model:</label>
+        <input id="model" type="text">
 
-    <label>Age:</label><br>
-    <input id="age" type="text"><br><br>
+        <label>Age:</label>
+        <input id="age" type="text">
 
-    <label>Damages:</label><br>
-    <input id="damages" type="text"><br><br>
+        <label>Damages:</label>
+        <input id="damages" type="text">
 
-    <button onclick="runTool()">Submit</button>
+        <button onclick="runTool()">Analyze</button>
 
-    <h3>Response:</h3>
-    <pre id="output"></pre>
+        <div class="spinner" id="spinner"></div>
+
+        <h3>Response:</h3>
+        <pre id="output"></pre>
+    </div>
 
     <script>
         async function runTool() {
-            const payload = {
-                model: document.getElementById("model").value,
-                age: document.getElementById("age").value,
-                damages: document.getElementById("damages").value
-            };
+            const model = document.getElementById("model").value.trim();
+            const age = document.getElementById("age").value.trim();
+            const damages = document.getElementById("damages").value.trim();
+            const spinner = document.getElementById("spinner");
+            const output = document.getElementById("output");
 
-            const response = await fetch("/api/run", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+            output.textContent = "";
 
-            const data = await response.json();
-            document.getElementById("output").textContent = data.output;
+            if (!model || !age || !damages) {
+                output.textContent = "Please fill in all fields.";
+                return;
+            }
+
+            spinner.style.display = "block";
+
+            try {
+                const response = await fetch("/api/run", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model, age, damages })
+                });
+
+                const data = await response.json();
+                output.textContent = data.output;
+            } catch (err) {
+                output.textContent = "Error contacting server.";
+            }
+
+            spinner.style.display = "none";
         }
     </script>
 </body>
