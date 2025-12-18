@@ -3,15 +3,13 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 load_dotenv()
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
 app = Flask(__name__)
 
 # ================================
 # SAFE: Use environment variables in real deployment
 # ================================
-client = OpenAI(
-    api_key=""
-)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # ---------------------------------------------------------
 # AI Logic
